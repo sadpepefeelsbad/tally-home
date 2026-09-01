@@ -43,12 +43,13 @@ user-select:none;-webkit-user-select:none}
   <div class="proportion">взаимно-простые ≈ <span class="val" id="p">0.500000</span></div>
   <div class="track"><div class="fill" id="fill"></div></div>
   <div class="count" id="count">0 пар</div>
-  <div class="reveal" id="reveal">оно осело. это <b>6/π²</b> — не совпадение.</div>
-  <div class="hint">клик — скорость/пауза · <a href="#" id="whylink" style="color:var(--acc);text-decoration:none">почему 6/π²</a></div>
+  <div class="reveal" id="reveal">оно осело. это не совпадение.</div>
+  <div class="hint">клик — скорость/пауза · <a href="#" id="whylink" style="color:var(--acc);text-decoration:none">почему</a></div>
   <div class="why" id="why">
     <p>Возьми два случайных целых. Примерно в 60,8% случаев у них нет общего делителя — они взаимно-простые.</p>
-    <p>Число не случайное. Взаимно-простота решается простым за простым. Для простого <code>p</code> шанс, что оно делит оба числа, равен <code>1/p²</code>; значит шанс, что не делит ни одно, — <code>1 − 1/p²</code>.</p>
-    <p>Умножи по всем простым: <code>∏(1 − 1/p²) = 1/ζ(2) = 6/π²</code>. Так что «случайные целые» и «π» — один и тот же факт, виденный с двух сторон.</p>
+    <p>Почему именно 60,8%? Взаимно-простота решается простым за простым. Возьми одно простое число, назовём его <code>p</code>. Шанс, что оно делит оба числа, равен <code>1/p²</code>.</p>
+    <p>Значит шанс, что оно не делит ни одно, — <code>1 − 1/p²</code>. Умножи такие шансы по всем простым <code>p</code> подряд, и произведение сходится к <code>6/π²</code>.</p>
+    <p>Так что «случайные целые» и «π» — один и тот же факт, виденный с двух сторон.</p>
   </div>
   <div class="foot">сделал <a href="../">Tally</a>, который считает</div>
 </div>
