@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>число → 1</title>
+<style>
+:root{--bg:#0a0c10;--fg:#e7e9ee;--mut:#8a92a0;--acc:#6ee7b7;--warn:#f0a35e;--line:#1c2129;}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);
+font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;user-select:none;-webkit-user-select:none}
+.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 20px 40px;text-align:center}
+.kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.big{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(34px,8vw,64px);font-weight:600;color:var(--acc);min-height:1.2em}
+.rule{color:var(--mut);font-size:14px;max-width:40ch}
+.stats{display:flex;gap:28px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .v{font-size:clamp(20px,4vw,30px);color:var(--fg)}
+.stat .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.spark{width:min(86vw,520px);height:120px}
+.spark polyline{fill:none;stroke:var(--acc);stroke-width:1.5}
+.spark .peak{stroke:var(--warn);stroke-width:1.5}
+.row{display:flex;gap:8px;align-items:center}
+input{background:#12161c;border:1px solid var(--line);color:var(--fg);
+font-family:ui-monospace,Menlo,Consolas,monospace;font-size:18px;padding:8px 12px;
+width:180px;text-align:center;border-radius:4px;outline:none}
+input:focus{border-color:var(--acc)}
+button{background:var(--acc);color:#04120c;border:none;font-weight:600;
+padding:9px 16px;border-radius:4px;cursor:pointer;font-size:14px}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);font-weight:400}
+.try{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.try button{background:transparent;border:1px solid var(--line);color:var(--mut);
+padding:5px 10px;border-radius:999px;font-size:13px;cursor:pointer;font-family:ui-monospace,Menlo,Consolas,monospace}
+.try button:hover{color:var(--acc);border-color:var(--acc)}
+.today{font-size:12px;color:var(--mut)}
+.foot{margin-top:24px;font-size:12px;color:var(--mut)}
+.foot a{color:var(--acc);text-decoration:none}
+.note{font-size:12px;color:var(--mut);opacity:.7;max-width:40ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">число → 1</div>
+  <div class="big" id="n">—</div>
+  <div class="rule">чётное — делишь пополам; нечётное — умножаешь на три и прибавляешь один. До одной.</div>
+  <div class="stats">
+    <div class="stat"><span class="v" id="steps">—</span><span class="l">шагов</span></div>
+    <div class="stat"><span class="v" id="peak">—</span><span class="l">вершина</span></div>
+  </div>
+  <svg class="spark" id="spark" viewBox="0 0 520 120" preserveAspectRatio="none"></svg>
+  <div class="row">
+    <input id="inp" type="text" inputmode="numeric" placeholder="твоё число" />
+    <button id="go">→</button>
+  </div>
+  <div class="try" id="try"></div>
+  <div class="today" id="today"></div>
+  <div class="foot">сделал <a href="../">Tally</a>, который считает</div>
+</div>
+<script>
+function traj(n){
+  const a=[]; let x=n, steps=0, peak=n;
+  while(x!==1n){ a.push(x); x = (x%2n===0n)? x/2n : 3n*x+1n; steps++; if(x>peak) peak=x; }
+  a.push(1n);
+  return {a, steps, peak};
+}
+function fmt(n){
+  if(n>BigInt(Number.MAX_SAFE_INTEGER)) return n.toString();
+  return Number(n).toLocaleString('en-US');
+}
+function draw(a, peak){
+  const svg=document.getElementById('spark');
+  svg.innerHTML='';
+  const W=520,H=120,pad=6;
+  const maxLog=Math.log10(Number(peak));
+  const n=a.length;
+  const pts=a.map((v,i)=>{
+    const lx=Math.log10(Number(v));
+    const x=(n===1)?W/2: (i/(n-1))*(W-2*pad)+pad;
+    const y=H-pad - (lx/maxLog)*(H-2*pad);
+    return [x,y];
+  });
+  const line=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  pl.setAttribute('points',line); svg.appendChild(pl);
+  // peak marker
+  let pi=0; a.forEach((v,i)=>{if(v>peak) pi=i;});
+  const pk=pts[pi];
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx',pk[0]); dot.setAttribute('cy',pk[1]); dot.setAttribute('r',3);
+  dot.setAttribute('fill','var(--warn)'); svg.appendChild(dot);
+}
+function show(n, label){
+  const {a,steps,peak}=traj(n);
+  document.getElementById('n').textContent=fmt(n);
+  document.getElementById('steps').textContent=fmt(steps);
+  document.getElementById('peak').textContent=fmt(peak);
+  draw(a,peak);
+  if(label) document.getElementById('today').textContent=label;
+}
+function parse(s){
+  const t=s.replace(/[^\d]/g,'');
+  if(!t) return null;
+  if(t.length>30){ document.getElementById('today').textContent='слишком большое — до 30 цифр'; return null; }
+  return BigInt(t);
+}
+const POOL=[27n,97n,273n,911n,77061n,837799n,1425873n,626331n,1562439n,370827n,2305074n];
+const FEATURES=[[27n,'27'],[97n,'97'],[837799n,'837799'],[626331n,'626331']];
+const today=new Date();
+const doy=Math.floor((today - new Date(today.getFullYear(),0,0))/86400000);
+const todays=POOL[doy%POOL.length];
+// try buttons
+const tryEl=document.getElementById('try');
+FEATURES.forEach(([n,l])=>{
+  const b=document.createElement('button'); b.textContent=l;
+  b.onclick=()=>{document.getElementById('inp').value=l; show(n,'');};
+  tryEl.appendChild(b);
+});
+document.getElementById('go').onclick=()=>{
+  const v=parse(document.getElementById('inp').value);
+  if(v&&v>0n) show(v,'');
+};
+document.getElementById('inp').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const v=parse(e.target.value); if(v&&v>0n) show(v,'');}
+});
+document.getElementById('today').textContent='число дня: '+fmt(todays);
+show(todays,'число дня: '+fmt(todays));
+</script>
+</body>
+</html>
